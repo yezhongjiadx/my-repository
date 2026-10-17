@@ -16,8 +16,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # 删掉了容易炸的setup‑android action！改用命令安装
+      - name: Install Android commandline‑tools
+        run: |
+          sudo apt update
+          sudo apt install -y unzip wget
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076798_latest.zip
+          mkdir -p ~/android/cmdline-tools
+          unzip commandlinetools-linux-11076798_latest.zip -d ~/android/cmdline-tools
+          mv ~/android/cmdline-tools/cmdline-tools ~/android/cmdline-tools/latest
+          echo "ANDROID_SDK_ROOT=$HOME/android" >> $GITHUB_ENV
+          export ANDROID_SDK_ROOT=$HOME/android
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;27.0.12077973"
 
       - name: Install vcpkg manually
         run: |
