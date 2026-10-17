@@ -19,16 +19,20 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup vcpkg
-        uses: microsoft/setup-vcpkg-action@v1
-        with:
-          packages: sdl2,sdl2-ttf
+      - name: Install vcpkg manually
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          ./vcpkg install sdl2:arm64-android sdl2-ttf:arm64-android
 
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission
         run: chmod +x gradlew
 
       - name: Build Release APK
         run: ./gradlew assembleRelease
+        env:
+          VCPKG_ROOT: ${{ github.workspace }}/vcpkg
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
