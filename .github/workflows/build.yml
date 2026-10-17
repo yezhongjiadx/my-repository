@@ -1,5 +1,4 @@
 name: Build Android APK
-
 on:
   push:
     branches: [ main ]
@@ -11,36 +10,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup JDK
+      - name: Setup JDK17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android NDK
-        uses: nttld/setup-ndk@v1
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup vcpkg
+        uses: microsoft/setup-vcpkg@v1
         with:
-          ndk-version: r27b
+          vcpkg-packages: sdl2,sdl2-ttf
 
-      - name: Install vcpkg
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          cd vcpkg
-          ./bootstrap-vcpkg.sh
-          ./vcpkg integrate install
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Build
-        run: |
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_TOOLCHAIN_FILE=$NDK_PATH/build/cmake/android.toolchain.cmake \
-            -DANDROID_ABI=arm64-v8a \
-            -DANDROID_PLATFORM=android-24 \
-            -DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/arm64-android
-          make -j4
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: game-apk
-          path: build/*.apk
+          name: app-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
