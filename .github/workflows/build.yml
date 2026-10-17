@@ -11,25 +11,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK & NDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup vcpkg
-        uses: microsoft/setup-vcpkg@v1
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
         with:
-          vcpkg-packages: sdl2,sdl2-ttf
+          ndk-version: r27b
 
-      - name: Build APK
-        run: ./gradlew assembleDebug
+      - name: Install vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          ./vcpkg integrate install
 
-      - name: Upload Artifact
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=$NDK_PATH/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-24 \
+            -DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/arm64-android
+          make -j4
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GuessGameAPK
-          path: app/build/outputs/apk/debug/*.apk
+          name: game-apk
+          path: build/*.apk
