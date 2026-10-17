@@ -16,14 +16,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 删掉了容易炸的setup‑android action！改用命令安装
       - name: Install Android commandline‑tools
         run: |
           sudo apt update
           sudo apt install -y unzip wget
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076798_latest.zip
+          # 来自谷歌官方仓库的固定可用地址
+          wget https://dl.google.com/android/repository/commandlinetools-linux-12433296_latest.zip
           mkdir -p ~/android/cmdline-tools
-          unzip commandlinetools-linux-11076798_latest.zip -d ~/android/cmdline-tools
+          unzip commandlinetools-linux-12433296_latest.zip -d ~/android/cmdline-tools
           mv ~/android/cmdline-tools/cmdline-tools ~/android/cmdline-tools/latest
           echo "ANDROID_SDK_ROOT=$HOME/android" >> $GITHUB_ENV
           export ANDROID_SDK_ROOT=$HOME/android
